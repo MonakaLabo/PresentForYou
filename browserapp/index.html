@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Vocabulary Trainer</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1>Vocabulary Trainer</h1>
+
+<div id="setup">
+
+<label>Table</label>
+<select id="tableSelect"></select>
+
+<br>
+
+<label>出題数</label>
+<input id="count" type="number" value="10">
+
+<br>
+
+<label>出題順</label>
+<select id="order">
+<option value="random">ランダム</option>
+<option value="forward">正順</option>
+<option value="reverse">逆順</option>
+</select>
+
+<br>
+
+<label>出題方向</label>
+<select id="direction">
+<option value="forward">単語→意味</option>
+<option value="reverse">意味→単語</option>
+</select>
+
+<br>
+
+<button onclick="start()">Start</button>
+
+</div>
+
+<div id="quiz" style="display:none">
+
+<div id="progress"></div>
+
+<h2 id="question"></h2>
+
+<div id="choices"></div>
+
+<div id="result"></div>
+
+</div>
+
+<script src="tables.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
