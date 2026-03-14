@@ -286,9 +286,10 @@ def memorize_menu():
 
     tables = load_tables()
 
-    table = tables[0]
+    data = []
 
-    data = table.data.copy()
+    for t in tables:
+        data.extend(t.data)
 
     order = choose_order()
 
@@ -300,7 +301,7 @@ def memorize_menu():
 
     count = choose_count(len(data))
 
-    memorize(data, table, count, order)
+    memorize(data, tables[0], count, order)
 
 
 def main():
