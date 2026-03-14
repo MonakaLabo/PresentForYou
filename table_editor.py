@@ -123,7 +123,16 @@ def create_table():
 
     path = os.path.join(TABLE_DIR, name)
 
+    bookcode = "BOOKCODE:" + Noneinput("書籍識別コード: ")
+
     tags = Noneinput("タグ: ")
+    
+    if tags != "None":
+        bookcode += "," + tags
+    
+    bookcode, tags = tags, bookcode
+    bookcode = None
+
     desc = Noneinput("説明: ")
     labels = Noneinput("ラベル: ")
     num = Falseinput("番号(True,1 or False): ")
