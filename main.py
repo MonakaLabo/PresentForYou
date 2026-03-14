@@ -13,6 +13,8 @@ class Table:
     def __init__(self, path):
 
         self.path = path
+        self.name = os.path.basename(path)
+
         self.tags = ""
         self.description = ""
         self.labels = []
@@ -27,7 +29,7 @@ class Table:
         with open(self.path, encoding="utf-8") as f:
             lines = [l.rstrip("\n") for l in f if l.strip()]
 
-        self.tags = lines[0]
+        self.tags = [s.strip() for s in lines[0].split(",")]
         self.description = lines[1]
         self.labels = lines[2].split(",")
 
@@ -38,9 +40,19 @@ class Table:
         if self.numbering:
             self.start_number = int(num[1])
 
-        for line in lines[4:]:
+        for i, line in enumerate(lines[4:]):
             a, b = line.split("\t", 1)
-            self.data.append((a, b))
+
+            if self.numbering:
+                wid = self.start_number + i
+            else:
+                wid = i + 1
+
+            self.data.append({
+                "id": wid,
+                "q": a,
+                "a": b
+            })
 
 
 def save_history(entry):
@@ -70,16 +82,19 @@ def load_history():
 
 def load_tables():
 
+    # tablesファイルをリスト形式で取得
     files = os.listdir(TABLE_DIR)
 
     print("tables:")
 
+    # iにindexを、fにファイル名を代入して繰り返す
     for i, f in enumerate(files):
-        print(f"{i}: {f}")
+        print(f"{i+1}: {f}")
 
     s = input("選択: ")
 
-    idx = [int(x) for x in s.split(",")]
+    # カンマ区切りで返された数値の列をリストに変換
+    idx = [int(x)-1 for x in s.split(",")]
 
     tables = []
 
@@ -91,7 +106,7 @@ def load_tables():
 
 def choose_order():
 
-    print("出題順")
+    print("\n出題順")
     print("0:ランダム")
     print("1:正順")
     print("2:逆順")
@@ -105,10 +120,23 @@ def choose_order():
 
     return "random"
 
+def choose_reverse():
+    
+    print("\n方向")
+    print("0:表向き")
+    print("1:裏向き")
+
+    s = input("> ")
+
+    if s == "1":
+        return "reverse"
+    else:
+        return "forward"
+
 
 def choose_count(total):
 
-    s = input(f"出題数 (max {total}): ")
+    s = input(f"\n出題数 (max {total}): ")
 
     if s == "":
         return total
@@ -129,6 +157,17 @@ def reorder(data, order):
     return data
 
 
+def reverser(data, reverse):
+
+    if reverse != "reverse":
+        return data
+
+    return [
+        {"id":d["id"], "q":d["a"], "a":d["q"]}
+        for d in data
+    ]
+        
+
 def get_answer(n):
 
     while True:
@@ -144,14 +183,18 @@ def get_answer(n):
         if 1 <= v <= n:
             return v
 
-        print("範囲外です")
+        print("選択肢の範囲外です")
 
 
-def memorize(data, table, count):
+def memorize(data, table, count, mode):
 
     correct = 0
     total_time = 0
     last_time = 0
+
+    wrong_ids = []
+
+    session_start = time.time()
 
     data = data[:count]
 
@@ -166,23 +209,24 @@ def memorize(data, table, count):
             print(f"正答率 {(correct/i)*100:.1f}%")
 
         if table.numbering:
-            print(f"単語番号 {table.start_number+i}")
+            print(f"単語番号 {q['id']}")
+        print("----------------")
 
-        word = q[0]
-        ans = q[1]
+        word = q["q"]
+        ans = q["a"]
 
         choices = [ans]
 
         while len(choices) < 4:
 
-            c = random.choice(data)[1]
+            c = random.choice(data)["a"]
 
             if c not in choices:
                 choices.append(c)
 
         random.shuffle(choices)
 
-        print(word)
+        print(f"\n{word}")
 
         for j, c in enumerate(choices):
             print(f"{j+1}: {c}")
@@ -198,53 +242,34 @@ def memorize(data, table, count):
 
         ok = choices[a-1] == ans
 
+        print()
+
         if ok:
             print("OK")
             correct += 1
         else:
             print("NG:", ans)
+            wrong_ids.append(q["id"])
 
-        save_history({
-            "time": datetime.now().isoformat(),
-            "word": word,
-            "correct": ok,
-            "answer_time": elapsed
-        })
+    duration = int(time.time() - session_start)
 
-    print("\n結果")
+    history_entry = {
+        "table": table.name,
+        "start_time": datetime.now().isoformat(),
+        "duration": duration,
+        "mode": mode,
+        "count": count,
+        "correct": correct,
+        "wrong_ids": wrong_ids
+    }
 
-    print(correct, "/", count)
+    save_history(history_entry)
 
-
-def weak_words():
-
-    hist = load_history()
-
-    stats = {}
-
-    for h in hist:
-
-        w = h["word"]
-
-        if w not in stats:
-            stats[w] = [0, 0]
-
-        stats[w][1] += 1
-
-        if h["correct"]:
-            stats[w][0] += 1
-
-    weak = []
-
-    for w, (c, t) in stats.items():
-
-        if c / t < 0.5:
-            weak.append(w)
-
-    print("苦手単語")
-
-    for w in weak:
-        print(w)
+    print("\n---------------")
+    print("結果\n")
+    print(f"correct :{correct} / {count} ({(correct/count)*100:.1f} %)")
+    print(f"Duration: {duration} s")
+    print(f"Average : {duration/count:.1f} s")
 
 
 def history_menu():
@@ -253,10 +278,8 @@ def history_menu():
 
     print("履歴数:", len(hist))
 
-    print("1:苦手単語")
-
-    if input("> ") == "1":
-        weak_words()
+    for h in hist[-5:]:
+        print(h["start_time"], h["table"], f'{h["correct"]}/{h["count"]}')
 
 
 def memorize_menu():
@@ -269,11 +292,15 @@ def memorize_menu():
 
     order = choose_order()
 
+    reverse = choose_reverse()
+
     data = reorder(data, order)
+
+    data = reverser(data, reverse)
 
     count = choose_count(len(data))
 
-    memorize(data, table, count)
+    memorize(data, table, count, order)
 
 
 def main():
