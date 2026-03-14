@@ -29,7 +29,7 @@ class Table:
         with open(self.path, encoding="utf-8") as f:
             lines = [l.rstrip("\n") for l in f if l.strip()]
 
-        self.tags = lines[0]
+        self.tags = [s.strip() for s in lines[0].split(",")]
         self.description = lines[1]
         self.labels = lines[2].split(",")
 
