@@ -120,6 +120,19 @@ def choose_order():
 
     return "random"
 
+def choose_reverse():
+    
+    print("\n方向")
+    print("0:表向き")
+    print("1:裏向き")
+
+    s = input("> ")
+
+    if s == "1":
+        return "reverse"
+    else:
+        return "forward"
+
 
 def choose_count(total):
 
@@ -143,6 +156,17 @@ def reorder(data, order):
 
     return data
 
+
+def reverser(data, reverse):
+
+    if reverse != "reverse":
+        return data
+
+    return [
+        {"id":d["id"], "q":d["a"], "a":d["q"]}
+        for d in data
+    ]
+        
 
 def get_answer(n):
 
@@ -268,7 +292,11 @@ def memorize_menu():
 
     order = choose_order()
 
+    reverse = choose_reverse()
+
     data = reorder(data, order)
+
+    data = reverser(data, reverse)
 
     count = choose_count(len(data))
 
