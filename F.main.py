@@ -186,6 +186,7 @@ def memorize(data, table, count, mode):
 
         if table.numbering:
             print(f"単語番号 {q['id']}")
+        print("----------------")
 
         word = q["q"]
         ans = q["a"]
@@ -216,6 +217,8 @@ def memorize(data, table, count, mode):
         total_time += elapsed
 
         ok = choices[a-1] == ans
+
+        print()
 
         if ok:
             print("OK")
