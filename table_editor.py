@@ -119,7 +119,7 @@ def Falseinput(text):
 
 def create_table():
 
-    name = input("ファイル名: ")
+    name = input("ファイル名: ") + ".table"
 
     path = os.path.join(TABLE_DIR, name)
 
