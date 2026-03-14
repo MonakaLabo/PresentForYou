@@ -15,6 +15,7 @@ class Table:
         self.path = path
         self.name = os.path.basename(path)
 
+        self.bookcode = ""
         self.tags = ""
         self.description = ""
         self.labels = []
@@ -30,6 +31,13 @@ class Table:
             lines = [l.rstrip("\n") for l in f if l.strip()]
 
         self.tags = [s.strip() for s in lines[0].split(",")]
+
+        if self.tags[0].startswith("BOOKCODE:"):
+            self.bookcode = self.tags[0].split(":", 1)[1]
+        else:
+            raise ValueError(f"{self.path} の1行目(メタデータ：タグ)にBOOKCODEがありません。")
+        
+        self.tags = self.tags[1:]
         self.description = lines[1]
         self.labels = lines[2].split(",")
 
@@ -97,11 +105,22 @@ def load_tables():
     idx = [int(x)-1 for x in s.split(",")]
 
     tables = []
+    bookcodes = set()
 
     for i in idx:
-        tables.append(Table(os.path.join(TABLE_DIR, files[i])))
 
-    return tables
+        table = Table(os.path.join(TABLE_DIR, files[i]))
+
+        tables.append(table)
+
+        bookcodes.add(table.bookcode)
+
+    if len(bookcodes) == 1:
+        bookcode = next(iter(bookcodes))
+    else:
+        bookcode = None
+
+    return tables, bookcode
 
 
 def choose_order():
@@ -186,7 +205,7 @@ def get_answer(n):
         print("選択肢の範囲外です")
 
 
-def memorize(data, table, count, mode):
+def memorize(data, table, bookcode, count, mode):
 
     correct = 0
     total_time = 0
@@ -284,7 +303,18 @@ def history_menu():
 
 def memorize_menu():
 
-    tables = load_tables()
+    while True:
+        tables, bookcode = load_tables()
+
+        if bookcode is None:
+            print("2種類以上の書籍が含まれています。")
+            print("今回の結果は苦手単語として登録されません。")
+            print("続行しますか？")
+            if input("0:選択し直す\n1:続行する\n> ") == 1:
+                break
+        
+        else:
+            break
 
     data = []
 
@@ -301,7 +331,7 @@ def memorize_menu():
 
     count = choose_count(len(data))
 
-    memorize(data, tables[0], count, order)
+    memorize(data, tables[0], bookcode, count, order)
 
 
 def main():
