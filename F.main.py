@@ -136,7 +136,7 @@ def choose_reverse():
 
 def choose_count(total):
 
-    s = input(f"出題数 (max {total}): ")
+    s = input(f"\n出題数 (max {total}): ")
 
     if s == "":
         return total
