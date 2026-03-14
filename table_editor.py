@@ -86,16 +86,38 @@ def edit_loop(path, header, data, numbering, start):
         data.append([word, meaning])
 
 
+def Noneinput(text):
+
+    s = input(text)
+
+    if s == "":
+        
+        s = "None"
+    
+    return s
+
+
+def Falseinput(text):
+
+    s = input(text)
+
+    if s == "":
+
+        s = "False"
+    
+    return s
+
+
 def create_table():
 
     name = input("ファイル名: ")
 
     path = os.path.join(TABLE_DIR, name)
 
-    tags = input("タグ: ")
-    desc = input("説明: ")
-    labels = input("ラベル: ")
-    num = input("番号(True,1 or False): ")
+    tags = Noneinput("タグ: ")
+    desc = Noneinput("説明: ")
+    labels = Noneinput("ラベル: ")
+    num = Falseinput("番号(True,1 or False): ")
 
     header = [tags, desc, labels, num]
 
