@@ -68,11 +68,20 @@ def edit_loop(path, header, data, numbering, start):
             print("ファイル:", os.path.basename(path))
             print("問題数:", len(data))
 
-            if input("終了しますか y/n: ") == "y":
+            if len(data) <= 3:
+                
+                print("\n=====! 不正なtableファイル !=====")
+                print("問題数が 4 未満のtableファイルは許可されていません。")
+                print(f"現在の問題数は {len(data)} です。")
+                print(f"少なくとも {4-len(data)} の問題を追加する必要があります。")
+            
+            else:
 
-                save_table(path, header, data)
+                if input("終了しますか y/n: ") == "y":
 
-                return
+                    save_table(path, header, data)
+
+                    return
 
             continue
 
