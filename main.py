@@ -2,10 +2,12 @@ import os
 import random
 import time
 import json
+import re
 from datetime import datetime
 
 TABLE_DIR = "tables"
 HISTORY_FILE = "history/history.json"
+STATS_FILE = os.path.join("stats", "weakword.json")
 
 
 class Table:
@@ -211,6 +213,7 @@ def memorize(data, table, bookcode, count, mode):
     total_time = 0
     last_time = 0
 
+    correct_ids = []
     wrong_ids = []
 
     session_start = time.time()
@@ -266,6 +269,7 @@ def memorize(data, table, bookcode, count, mode):
         if ok:
             print("OK")
             correct += 1
+            correct_ids.append(q["id"])
         else:
             print("NG:", ans)
             wrong_ids.append(q["id"])
@@ -289,6 +293,55 @@ def memorize(data, table, bookcode, count, mode):
     print(f"correct :{correct} / {count} ({(correct/count)*100:.1f} %)")
     print(f"Duration: {duration} s")
     print(f"Average : {duration/count:.1f} s")
+
+    stats_update(bookcode, correct_ids, wrong_ids)
+
+
+def stats_update(bookcode, correct, wrong):
+
+    os.makedirs("stats", exist_ok=True)
+
+    if os.path.exists(STATS_FILE):
+        with open(STATS_FILE, encoding="utf-8") as f:
+            data = json.load(f)
+    else:
+        data = {}
+    
+    if bookcode not in data:
+        data[bookcode] = {}
+
+    words = data[bookcode]
+
+    for wid in correct:
+
+        wid = str(wid)
+
+        if wid in words:
+            words[wid][0] += 1
+        else:
+            words[wid] = [1, 0]
+        
+    for wid in wrong:
+
+        wid = str(wid)
+
+        if wid in words:
+            words[wid][1] += 1
+        else:
+            words[wid] = [0, 1]
+    
+    data[bookcode] = dict(
+        sorted(data[bookcode].items(), key=lambda x: int(x[0]))
+    )
+
+    data = dict(sorted(data.items()))
+
+    text = json.dumps(data, ensure_ascii=False, indent=2)
+
+    text = re.sub(r'\[\s*(\d+),\s*(\d+)\s*\]', r'[\1, \2]', text)
+
+    with open(STATS_FILE, "w", encoding="utf-8") as f:
+        f.write(text)
 
 
 def history_menu():
