@@ -82,16 +82,19 @@ def load_history():
 
 def load_tables():
 
+    # tablesファイルをリスト形式で取得
     files = os.listdir(TABLE_DIR)
 
     print("tables:")
 
+    # iにindexを、fにファイル名を代入して繰り返す
     for i, f in enumerate(files):
-        print(f"{i}: {f}")
+        print(f"{i+1}: {f}")
 
     s = input("選択: ")
 
-    idx = [int(x) for x in s.split(",")]
+    # カンマ区切りで返された数値の列をリストに変換
+    idx = [int(x)-1 for x in s.split(",")]
 
     tables = []
 
