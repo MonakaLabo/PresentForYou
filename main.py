@@ -4,6 +4,7 @@ import time
 import json
 import re
 from datetime import datetime
+from improve import improve_menu
 
 TABLE_DIR = "tables"
 HISTORY_FILE = "history/history.json"
@@ -348,10 +349,12 @@ def history_menu():
 
     hist = load_history()
 
-    print("履歴数:", len(hist))
+    print("\n履歴数:", len(hist))
+    print("最新10件を表示します。")
+    print("日時 table名 正答数/出題数")
 
-    for h in hist[-5:]:
-        print(h["start_time"], h["table"], f'{h["correct"]}/{h["count"]}')
+    for h in hist[-10:]:
+        print(h["start_time"][:-7], h["table"][:-6], f'{h["correct"]}/{h["count"]}')
 
 
 def memorize_menu():
@@ -389,12 +392,15 @@ def memorize_menu():
 
 def main():
 
-    print("0:暗記")
-    print("1:履歴")
+    print("0:通常暗記")
+    print("1:苦手強化")
+    print("1:履歴表示")
 
     s = input("> ")
 
     if s == "1":
+        improve()
+    elif s == "2":
         history_menu()
     else:
         memorize_menu()
